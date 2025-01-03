@@ -104,15 +104,16 @@ jobs:
             helm upgrade --install ${{ github.event.repository.name }} charts/${{ github.event.repository.name }} \
               --namespace kaellybot \
               --create-namespace \
-              --set image.tag="${{ env.image_tag_name }}" \
-              --set-string secrets.DISCORD_TOKEN="${{ secrets.DOFUS_PORTALS_TOKEN }}" \
+              --set cronjob.image.tag="${{ env.image_tag_name }}" \
+              --set cronjob.schedule="${{ secrets.SCHEDULE }}" \
+              --set-string secrets.TWITTER_AUTH_TOKEN="${{ secrets.TWITTER_AUTH_TOKEN }}" \
+              --set-string secrets.TWITTER_CSRF_TOKEN="${{ secrets.TWITTER_CSRF_TOKEN }}" \
               --set secrets.MYSQL_URL="${{ secrets.MYSQL_URL }}" \
               --set secrets.MYSQL_USER="${{ secrets.MYSQL_USER }}" \
               --set secrets.MYSQL_PASSWORD="${{ secrets.MYSQL_PASSWORD }}" \
               --set secrets.MYSQL_DATABASE="${{ secrets.MYSQL_DATABASE }}" \
               --set secrets.RABBITMQ_ADDRESS="${{ secrets.RABBITMQ_ADDRESS }}" \
-              --set configMap.HTTP_TIMEOUT="${{ secrets.WORKER_POOL }}" \
-              --set configMap.PROBE_PORT="${{ secrets.PROBE_PORT }}" \
+              --set configMap.TWEET_COUNT="${{ secrets.TWEET_COUNT }}" \
               --set configMap.METRIC_PORT="${{ secrets.METRIC_PORT }}" \
               --set configMap.LOG_LEVEL="${{ secrets.LOG_LEVEL }}" \
               --set-string configMap.PRODUCTION="${{ secrets.PRODUCTION }}"

@@ -20,6 +20,6 @@ spec:
                   name: {{ .Release.Name }}-configmap
               - secretRef:
                   name: {{ .Release.Name }}-secrets
+            resources:
+              {{- toYaml .Values.cronjob.resources | nindent 12 }}
           restartPolicy: {{ .Values.cronjob.restartPolicy }}
-          resources:
-            {{- toYaml .Values.cronjob.resources | nindent 12 }}
