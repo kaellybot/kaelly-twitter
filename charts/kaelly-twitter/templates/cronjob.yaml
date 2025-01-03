@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Values.cronjob.name }}
+  labels:
+    app: {{ .Chart.Name }}
+spec:
+  schedule: "{{ .Values.cronjob.schedule }}"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: {{ .Values.cronjob.name }}
+            image: "{{ .Values.cronjob.image.repository }}:{{ .Values.cronjob.image.tag }}"
+            command: {{ .Values.cronjob.command | toJson }}
+            args: {{ .Values.cronjob.args | toJson }}
+            envFrom:
+              - configMapRef:
+                  name: {{ .Release.Name }}-configmap
+              - secretRef:
+                  name: {{ .Release.Name }}-secrets
+            resources:
+              {{- toYaml .Values.cronjob.resources | nindent 12 }}
+          restartPolicy: {{ .Values.cronjob.restartPolicy }}
