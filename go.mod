@@ -5,7 +5,7 @@ go 1.24
 // replace github.com/kaellybot/kaelly-amqp => ../kaelly-amqp
 
 require (
-	github.com/kaellybot/kaelly-amqp v0.0.10-beta4
+	github.com/kaellybot/kaelly-amqp v1.0.0
 	github.com/n0madic/twitter-scraper v0.0.0-20231104223941-296710769dd8
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/viper v1.19.0
