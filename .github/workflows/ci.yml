@@ -105,7 +105,7 @@ jobs:
               --namespace kaellybot \
               --create-namespace \
               --set cronjob.image.tag="${{ env.image_tag_name }}" \
-              --set cronjob.schedule="${{ secrets.SCHEDULE }}" \
+              --set-string cronjob.schedule="${{ secrets.SCHEDULE }}" \
               --set-string secrets.TWITTER_AUTH_TOKEN="${{ secrets.TWITTER_AUTH_TOKEN }}" \
               --set-string secrets.TWITTER_CSRF_TOKEN="${{ secrets.TWITTER_CSRF_TOKEN }}" \
               --set secrets.MYSQL_URL="${{ secrets.MYSQL_URL }}" \

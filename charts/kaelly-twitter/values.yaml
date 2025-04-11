@@ -24,7 +24,7 @@ secrets:
   TWITTER_CSRF_TOKEN: ""
 
 cronjob:
-  schedule: "0 0 * * *"
+  schedule: "*/10 * * * *"
   name: "kaelly-twitter"
   image:
     repository: ghcr.io/kaellybot/kaelly-twitter
