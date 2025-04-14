@@ -9,6 +9,7 @@ require (
 	github.com/n0madic/twitter-scraper v0.0.0-20231104223941-296710769dd8
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/viper v1.19.0
+	golang.org/x/crypto/x509roots/fallback v0.0.0-20250414032335-388684e50b26
 	google.golang.org/protobuf v1.33.0
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.25.12
