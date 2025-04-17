@@ -6,7 +6,7 @@ metadata:
 data:
 {{- if .Values.configMap }}
 {{- range $key, $value := .Values.configMap }}
-  {{ $key }}: "{{ $value | quote }}"
+  {{ $key }}: "{{ $value }}"
 {{- end }}
 {{- else }}
 {{- end }}
