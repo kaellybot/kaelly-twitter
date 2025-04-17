@@ -12,7 +12,7 @@ configMap:
   METRIC_PORT: "2112"
   LOG_LEVEL: "info"
   PRODUCTION: "false"
-  TWEET_COUNT: ""
+  TWEET_COUNT: "20"
 
 secrets:
   MYSQL_URL: "localhost:3306"
