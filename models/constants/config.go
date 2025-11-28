@@ -31,6 +31,9 @@ const (
 	// Number of tweets retrieved per call.
 	TwitterTweetCount = "TWEET_COUNT"
 
+	// User Agent to call Twitter API.
+	TwitterUserAgent = "USER_AGENT"
+
 	// Metric port.
 	MetricPort = "METRIC_PORT"
 
@@ -48,6 +51,7 @@ const (
 	defaultTwitterAuthToken  = ""
 	defaultTwitterCSRFToken  = ""
 	defaultTwitterTweetCount = 20
+	defaultTwitterUserAgent  = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0"
 	defaultMetricPort        = 2112
 	defaultLogLevel          = zerolog.InfoLevel
 	defaultProduction        = false
@@ -63,6 +67,7 @@ func GetDefaultConfigValues() map[string]any {
 		TwitterAuthToken:  defaultTwitterAuthToken,
 		TwitterCSRFToken:  defaultTwitterCSRFToken,
 		TwitterTweetCount: defaultTwitterTweetCount,
+		TwitterUserAgent:  defaultTwitterUserAgent,
 		MetricPort:        defaultMetricPort,
 		LogLevel:          defaultLogLevel.String(),
 		Production:        defaultProduction,

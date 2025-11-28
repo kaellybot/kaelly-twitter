@@ -2,16 +2,15 @@ package twitter
 
 import (
 	"fmt"
-	"net/http"
 	"sort"
 	"sync"
 	"time"
 
 	amqp "github.com/kaellybot/kaelly-amqp"
 	"github.com/kaellybot/kaelly-twitter/models/constants"
+	"github.com/kaellybot/kaelly-twitter/models/dtos"
 	"github.com/kaellybot/kaelly-twitter/models/entities"
 	"github.com/kaellybot/kaelly-twitter/repositories/twitteraccounts"
-	twitterscraper "github.com/n0madic/twitter-scraper"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -19,12 +18,12 @@ import (
 
 func New(twitterAccountsRepo twitteraccounts.Repository, broker amqp.MessageBroker) (*Impl, error) {
 	return &Impl{
+		userAgent:           viper.GetString(constants.TwitterUserAgent),
 		authToken:           viper.GetString(constants.TwitterAuthToken),
 		csrfToken:           viper.GetString(constants.TwitterCSRFToken),
 		tweetCount:          viper.GetInt(constants.TwitterTweetCount),
 		twitterAccountsRepo: twitterAccountsRepo,
 		broker:              broker,
-		scraper:             twitterscraper.New(),
 	}, nil
 }
 
@@ -35,17 +34,6 @@ func (service *Impl) DispatchNewTweets() error {
 	if err != nil {
 		return err
 	}
-
-	service.scraper.SetCookies([]*http.Cookie{
-		{
-			Name:  "auth_token",
-			Value: service.authToken,
-		},
-		{
-			Name:  "ct0",
-			Value: service.csrfToken,
-		},
-	})
 
 	var wg sync.WaitGroup
 	for _, account := range twitterAccounts {
@@ -66,7 +54,7 @@ func (service *Impl) checkTwitterAccount(account entities.TwitterAccount) {
 		Str(constants.LogTwitterID, account.ID).
 		Msgf("Reading tweets...")
 
-	tweets, _, err := service.scraper.FetchTweets(account.Name, service.tweetCount, "")
+	tweets, err := service.fetchTweets(account.ID, service.tweetCount)
 	if err != nil {
 		log.Error().Err(err).
 			Str(constants.LogTwitterID, account.ID).
@@ -113,7 +101,7 @@ func (service *Impl) checkTwitterAccount(account entities.TwitterAccount) {
 		Msgf("Tweet(s) read and published")
 }
 
-func (service *Impl) publishTweet(account entities.TwitterAccount, tweet *twitterscraper.Tweet) error {
+func (service *Impl) publishTweet(account entities.TwitterAccount, tweet *dtos.Tweet) error {
 	tweetPhotos := make([]string, 0)
 	for _, photo := range tweet.Photos {
 		tweetPhotos = append(tweetPhotos, photo.URL)
@@ -136,8 +124,8 @@ func (service *Impl) publishTweet(account entities.TwitterAccount, tweet *twitte
 	return service.broker.Emit(&message, amqp.ExchangeNews, routingkey, tweet.ID)
 }
 
-func (service *Impl) keepInterestingTweets(tweets []*twitterscraper.Tweet) []*twitterscraper.Tweet {
-	result := make([]*twitterscraper.Tweet, 0)
+func (service *Impl) keepInterestingTweets(tweets []*dtos.Tweet) []*dtos.Tweet {
+	result := make([]*dtos.Tweet, 0)
 
 	for _, tweet := range tweets {
 		// Exclude RTs
