@@ -64,7 +64,7 @@ func (service *Impl) checkTwitterAccount(account entities.TwitterAccount) {
 
 	publishedTweets := 0
 	lastUpdate := account.LastUpdate
-	tweets = service.keepInterestingTweets(tweets)
+	tweets = service.keepInterestingTweets(account.ID, tweets)
 
 	for _, tweet := range tweets {
 		utcDate := time.Unix(tweet.Timestamp, 0).UTC()
@@ -124,12 +124,12 @@ func (service *Impl) publishTweet(account entities.TwitterAccount, tweet *dtos.T
 	return service.broker.Emit(&message, amqp.ExchangeNews, routingkey, tweet.ID)
 }
 
-func (service *Impl) keepInterestingTweets(tweets []*dtos.Tweet) []*dtos.Tweet {
+func (service *Impl) keepInterestingTweets(accountID string, tweets []*dtos.Tweet) []*dtos.Tweet {
 	result := make([]*dtos.Tweet, 0)
 
 	for _, tweet := range tweets {
 		// Exclude RTs
-		if tweet.RetweetedStatus != nil {
+		if tweet.RetweetedStatus != nil || tweet.UserID != accountID {
 			continue
 		}
 
