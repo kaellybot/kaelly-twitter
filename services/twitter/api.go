@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -264,11 +265,8 @@ func parseLegacyTweet(user *dtos.LegacyUserResult, tweet *dtos.LegacyRawTweet) *
 		tw.Views = views
 	}
 
-	for _, pinned := range user.Legacy.PinnedTweetIDsStr {
-		if tweet.IDStr == pinned {
-			tw.IsPin = true
-			break
-		}
+	if slices.Contains(user.Legacy.PinnedTweetIDsStr, tweet.IDStr) {
+		tw.IsPin = true
 	}
 
 	for _, hash := range tweet.Entities.Hashtags {
@@ -417,10 +415,5 @@ func expandURLs(text string, urls []dtos.URL, extendedMediaEntities []dtos.Exten
 }
 
 func stringInSlice(a string, list []string) bool {
-	for _, b := range list {
-		if b == a {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(list, a)
 }
