@@ -5,7 +5,7 @@ go 1.27.0
 // replace github.com/kaellybot/kaelly-amqp => ../kaelly-amqp
 
 require (
-	github.com/kaellybot/kaelly-amqp v1.0.6
+	github.com/kaellybot/kaelly-amqp v1.1.0
 	github.com/rs/zerolog v1.35.1
 	github.com/spf13/viper v1.21.0
 	golang.org/x/crypto/x509roots/fallback v0.0.0-20260916154351-b853e4b620cd

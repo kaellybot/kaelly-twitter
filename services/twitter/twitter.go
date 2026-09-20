@@ -37,6 +37,16 @@ func (service *Impl) DispatchNewTweets() error {
 
 	var wg sync.WaitGroup
 	for _, account := range twitterAccounts {
+		// A row without a game produces news the broker refuses to publish, so
+		// reading it would only waste a Twitter call. Fix the row in database.
+		if account.Game == amqp.Game_ANY_GAME {
+			log.Error().
+				Str(constants.LogTwitterID, account.ID).
+				Str(constants.LogLanguage, account.Locale.String()).
+				Msgf("Twitter account has no game, account ignored")
+			continue
+		}
+
 		wg.Add(1)
 		go func(twitterAccount entities.TwitterAccount) {
 			defer wg.Done()
@@ -52,12 +62,14 @@ func (service *Impl) checkTwitterAccount(account entities.TwitterAccount) {
 	log.Info().
 		Str(constants.LogLanguage, account.Locale.String()).
 		Str(constants.LogTwitterID, account.ID).
+		Str(constants.LogGame, account.Game.String()).
 		Msgf("Reading tweets...")
 
 	tweets, err := service.fetchTweets(account.ID, service.tweetCount)
 	if err != nil {
 		log.Error().Err(err).
 			Str(constants.LogTwitterID, account.ID).
+			Str(constants.LogGame, account.Game.String()).
 			Msgf("Cannot retrieve tweets from account, ignored")
 		return
 	}
@@ -68,35 +80,39 @@ func (service *Impl) checkTwitterAccount(account entities.TwitterAccount) {
 
 	for _, tweet := range tweets {
 		utcDate := time.Unix(tweet.Timestamp, 0).UTC()
-		if utcDate.After(lastUpdate.UTC()) {
-			errPublish := service.publishTweet(account, tweet)
-			if errPublish != nil {
-				log.Error().Err(err).
-					Str(constants.LogCorrelationID, tweet.ID).
-					Str(constants.LogTwitterID, account.ID).
-					Str(constants.LogTweetID, tweet.ID).
-					Msgf("Impossible to publish tweet, breaking loop")
-				break
-			}
-
-			account.LastUpdate = utcDate
-			err = service.twitterAccountsRepo.Save(account)
-			if err != nil {
-				log.Error().Err(err).
-					Str(constants.LogCorrelationID, tweet.ID).
-					Str(constants.LogTwitterID, account.ID).
-					Str(constants.LogTweetID, tweet.ID).
-					Msgf("Impossible to update account, breaking loop; this tweet might be published again next time")
-				break
-			}
-
-			publishedTweets++
+		if !utcDate.After(lastUpdate.UTC()) {
+			continue
 		}
+
+		errPublish := service.publishTweet(account, tweet)
+		if errPublish != nil {
+			log.Error().Err(errPublish).
+				Str(constants.LogCorrelationID, tweet.ID).
+				Str(constants.LogTwitterID, account.ID).
+				Str(constants.LogGame, account.Game.String()).
+				Str(constants.LogTweetID, tweet.ID).
+				Msgf("Impossible to publish tweet, breaking loop")
+			break
+		}
+
+		account.LastUpdate = utcDate
+		if errSave := service.twitterAccountsRepo.Save(account); errSave != nil {
+			log.Error().Err(errSave).
+				Str(constants.LogCorrelationID, tweet.ID).
+				Str(constants.LogTwitterID, account.ID).
+				Str(constants.LogGame, account.Game.String()).
+				Str(constants.LogTweetID, tweet.ID).
+				Msgf("Impossible to update account, breaking loop; this tweet might be published again next time")
+			break
+		}
+
+		publishedTweets++
 	}
 
 	log.Info().
 		Str(constants.LogLanguage, account.Locale.String()).
 		Str(constants.LogTwitterID, account.ID).
+		Str(constants.LogGame, account.Game.String()).
 		Int(constants.LogTweetNumber, publishedTweets).
 		Msgf("Tweet(s) read and published")
 }
