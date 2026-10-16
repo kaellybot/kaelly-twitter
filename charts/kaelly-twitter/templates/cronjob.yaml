@@ -21,5 +21,5 @@ spec:
               - secretRef:
                   name: {{ .Release.Name }}-secrets
             resources:
-              {{- toYaml .Values.cronjob.resources | nindent 12 }}
+              {{- toYaml .Values.cronjob.resources | nindent 14 }}
           restartPolicy: {{ .Values.cronjob.restartPolicy }}
